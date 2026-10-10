@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import type { SiteConfig } from "@/content/types";
 import { logout, useAuthUser } from "@/lib/auth";
 import { getSiteContent } from "@/lib/site-content";
+import { AccountSection } from "./AccountSection";
 import { AppearanceSection } from "./AppearanceSection";
 import { BioSection } from "./BioSection";
 import { CategoriesSection } from "./CategoriesSection";
@@ -23,6 +24,7 @@ const sections = [
   { id: "categorias", label: "Categorías" },
   { id: "obras", label: "Obras" },
   { id: "consultas", label: "Consultas" },
+  { id: "cuenta", label: "Cuenta" },
 ] as const;
 
 type SectionId = (typeof sections)[number]["id"];
@@ -56,7 +58,9 @@ export function AdminApp() {
     <div className="grid grid-cols-1 gap-12 lg:grid-cols-[14rem_1fr]">
       <aside className="flex flex-col gap-6">
         <nav className="flex flex-col gap-3">
-          {sections.map((item) => (
+          {sections
+            .filter((item) => item.id !== "cuenta" || Boolean(user?.email))
+            .map((item) => (
             <button
               key={item.id}
               type="button"
@@ -112,6 +116,9 @@ export function AdminApp() {
         ) : null}
         {section === "obras" ? <WorksSection site={site} onSaved={setSite} /> : null}
         {section === "consultas" ? <InquiriesSection /> : null}
+        {section === "cuenta" && user?.email ? (
+          <AccountSection email={user.email} />
+        ) : null}
       </section>
     </div>
   );

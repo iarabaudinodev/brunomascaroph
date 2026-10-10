@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import type { SiteConfig } from "@/content/types";
 import { logout, useAuthUser } from "@/lib/auth";
 import { getSiteContent } from "@/lib/site-content";
+import { AppearanceSection } from "./AppearanceSection";
 import { BioSection } from "./BioSection";
 import { CategoriesSection } from "./CategoriesSection";
 import { ContactSection } from "./ContactSection";
@@ -15,6 +16,7 @@ import { WorksSection } from "./WorksSection";
 import { cn } from "@/lib/cn";
 
 const sections = [
+  { id: "apariencia", label: "Apariencia" },
   { id: "identidad", label: "Identidad" },
   { id: "bio", label: "Bio" },
   { id: "contacto", label: "Contacto" },
@@ -29,7 +31,7 @@ export function AdminApp() {
   const router = useRouter();
   const { user, loading, configured } = useAuthUser();
   const [site, setSite] = useState<SiteConfig | null>(null);
-  const [section, setSection] = useState<SectionId>("identidad");
+  const [section, setSection] = useState<SectionId>("apariencia");
 
   useEffect(() => {
     if (!loading && configured && !user) {
@@ -95,6 +97,9 @@ export function AdminApp() {
       </aside>
 
       <section>
+        {section === "apariencia" ? (
+          <AppearanceSection site={site} onSaved={setSite} />
+        ) : null}
         {section === "identidad" ? (
           <IdentitySection site={site} onSaved={setSite} />
         ) : null}

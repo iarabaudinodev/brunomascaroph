@@ -59,7 +59,7 @@ export function Lightbox({ work, onClose }: LightboxProps) {
           </div>
         </div>
         <div className="mt-4 flex w-full flex-col items-center justify-between border-t border-outline-variant/30 pt-6 text-center sm:flex-row sm:text-left">
-          <h4 className="font-headline-sm text-headline-sm tracking-tight text-primary">
+          <h4 className="font-headline-sm text-headline-sm tracking-tight text-heading">
             {work.title}
           </h4>
           <span className="font-label-sm text-label-sm mt-2 tracking-widest text-outline uppercase sm:mt-0">

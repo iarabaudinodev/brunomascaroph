@@ -22,7 +22,7 @@ function supabaseKey() {
   );
 }
 
-const OBJECT_KEY = /^(hero|portrait|works|misc)\/[A-Za-z0-9._-]+$/;
+const OBJECT_KEY = /^(hero|portrait|works|logo|misc)\/[A-Za-z0-9._-]+$/;
 
 export function objectKeyFromUrl(fileUrl: string) {
   const clean = fileUrl.split("?")[0];
@@ -38,7 +38,7 @@ export function objectKeyFromUrl(fileUrl: string) {
   }
 
   const local = clean.match(
-    /^\/uploads\/((?:hero|portrait|works|misc)\/[A-Za-z0-9._-]+)$/,
+    /^\/uploads\/((?:hero|portrait|works|logo|misc)\/[A-Za-z0-9._-]+)$/,
   );
   return local?.[1] ?? null;
 }

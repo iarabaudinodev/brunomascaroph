@@ -42,9 +42,19 @@ export function Header() {
       <div className="flex h-12 w-full items-center justify-between gap-3 px-margin-mobile md:h-14 md:px-margin-tablet lg:px-margin-desktop">
         <a
           href="#top"
-          className="font-label-sm min-w-0 truncate text-[10px] tracking-[0.18em] text-primary uppercase transition-opacity hover:opacity-80 md:text-[11px]"
+          className="font-label-sm flex min-w-0 items-center text-[10px] tracking-[0.18em] text-primary uppercase transition-opacity hover:opacity-80 md:text-[11px]"
         >
-          {site.photographer.shortName || "YIB PH"}
+          {site.photographer.logo ? (
+            // El logo puede ser SVG o un recorte con transparencia.
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={site.photographer.logo}
+              alt={site.photographer.shortName || site.photographer.name || "Logo"}
+              className="h-5 w-auto max-w-[9rem] object-contain md:h-6"
+            />
+          ) : (
+            <span className="truncate">{site.photographer.shortName}</span>
+          )}
         </a>
 
         <nav className="hidden items-center gap-editorial-gap-sm md:flex">
@@ -65,25 +75,28 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-3 md:gap-6">
-          <div className="hidden items-center gap-2 lg:flex">
-            {site.photographer.available ? (
-              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
-            ) : null}
-            <span className="font-label-sm text-label-sm tracking-widest text-on-surface-variant uppercase">
-              {site.photographer.location}
-              {site.photographer.available
-                ? ` / ${site.photographer.availabilityLabel}`
-                : ""}
-            </span>
-          </div>
+          {site.photographer.location ||
+          (site.photographer.available && site.photographer.availabilityLabel) ? (
+            <div className="hidden items-center gap-2 lg:flex">
+              {site.photographer.available ? (
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent" />
+              ) : null}
+              <span className="font-label-sm text-label-sm tracking-widest text-on-surface-variant uppercase">
+                {site.photographer.location}
+                {site.photographer.available && site.photographer.availabilityLabel
+                  ? `${site.photographer.location ? " / " : ""}${site.photographer.availabilityLabel}`
+                  : ""}
+              </span>
+            </div>
+          ) : null}
 
           <a
             href="#contacto"
-            className="flex h-7 w-7 items-center justify-center rounded-full bg-primary"
+            className="flex h-7 w-7 items-center justify-center rounded-full bg-button"
             aria-label="Ir a contacto"
             onClick={() => setOpen(false)}
           >
-            <MaterialIcon name="mail" className="text-[14px] text-on-primary" />
+            <MaterialIcon name="mail" className="text-[14px] text-on-button" />
           </a>
 
           <button

@@ -54,7 +54,7 @@ export function AdminLogin() {
     <form className="flex max-w-md flex-col gap-8" onSubmit={onSubmit}>
       <div>
         <span className="font-label-sm text-label-sm tracking-widest text-outline uppercase">
-          Archivo
+          Panel
         </span>
         <h1 className="font-headline-lg text-headline-lg-mobile mt-2 text-primary">
           Entrar

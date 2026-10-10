@@ -4,6 +4,7 @@ const MAX_EDGE: Record<string, number> = {
   hero: 2400,
   portrait: 1600,
   works: 2200,
+  logo: 800,
   misc: 2000,
 };
 

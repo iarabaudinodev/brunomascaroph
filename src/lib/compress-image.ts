@@ -2,6 +2,7 @@ const MAX_EDGE: Record<string, number> = {
   hero: 2400,
   portrait: 1600,
   works: 2200,
+  logo: 800,
   misc: 2000,
 };
 
@@ -18,7 +19,12 @@ function canvasToBlob(
 }
 
 export async function compressImageFile(file: File, folder: string) {
-  if (!file.type.startsWith("image/") || file.type === "image/gif") {
+  if (
+    !file.type.startsWith("image/") ||
+    file.type === "image/gif" ||
+    file.type === "image/svg+xml" ||
+    file.name.toLowerCase().endsWith(".svg")
+  ) {
     return file;
   }
 
@@ -37,6 +43,13 @@ export async function compressImageFile(file: File, folder: string) {
     const context = canvas.getContext("2d");
     if (!context) return file;
     context.drawImage(bitmap, 0, 0, width, height);
+
+    if (folder === "logo") {
+      const logoWebp = await canvasToBlob(canvas, "image/webp", 0.92);
+      if (!logoWebp) return file;
+      const logoName = file.name.replace(/\.[^.]+$/, "") + ".webp";
+      return new File([logoWebp], logoName, { type: "image/webp" });
+    }
 
     const webp = await canvasToBlob(canvas, "image/webp", 0.76);
     const jpeg = await canvasToBlob(canvas, "image/jpeg", 0.82);

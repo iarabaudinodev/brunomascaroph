@@ -27,10 +27,20 @@ export type NavItem = {
   id: string;
 };
 
+export type SiteTheme = {
+  background: string;
+  text: string;
+  heading: string;
+  muted: string;
+  accent: string;
+  button: string;
+};
+
 export type SiteConfig = {
   photographer: {
     name: string;
     shortName: string;
+    logo: string;
     role: string;
     location: string;
     available: boolean;
@@ -39,6 +49,7 @@ export type SiteConfig = {
     instagramUrl: string;
     email: string;
   };
+  theme: SiteTheme;
   seo: {
     title: string;
     description: string;

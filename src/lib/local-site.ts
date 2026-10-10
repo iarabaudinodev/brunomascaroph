@@ -1,7 +1,7 @@
 import type { SiteConfig } from "@/content/types";
 
-const STORAGE_KEY = "portfolioph.site";
-export const LOCAL_SITE_EVENT = "portfolioph-site";
+const STORAGE_KEY = "portfolio-template.site";
+export const LOCAL_SITE_EVENT = "portfolio-template-site";
 
 export function readLocalSite(): Partial<SiteConfig> | null {
   if (typeof window === "undefined") return null;

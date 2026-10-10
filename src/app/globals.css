@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-@theme inline {
+@theme {
   --color-inverse-primary: #5d5f5d;
   --color-surface-tint: #c6c7c5;
   --color-on-secondary-container: #b9b8b4;
@@ -35,7 +35,12 @@
   --color-on-tertiary-fixed: #1f1b1a;
   --color-surface-variant: #353534;
   --color-surface-container: #201f1f;
-  --color-primary: #ffffff;
+  --color-primary: #f3f0eb;
+  --color-heading: #f3f0eb;
+  --color-accent: #f3f0eb;
+  --color-on-accent: #141414;
+  --color-button: #f3f0eb;
+  --color-on-button: #141414;
   --color-on-secondary: #30312e;
   --color-surface: #131313;
   --color-on-error: #690005;

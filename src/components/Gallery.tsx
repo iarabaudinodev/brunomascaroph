@@ -79,7 +79,7 @@ export function Gallery() {
   const works = useMemo(
     () =>
       gallery.works.filter(
-        (work) => filter === "all" || work.category === filter,
+        (work) => work.src && (filter === "all" || work.category === filter),
       ),
     [filter, gallery.works],
   );
@@ -203,10 +203,16 @@ export function Gallery() {
         <SectionFade edge="bottom" />
         <div
           className={cn(
-            "flex min-h-[36vh] flex-col justify-center gap-1.5 transition-opacity duration-500 md:min-h-[56vh] md:gap-2",
+            "flex flex-col justify-center gap-1.5 transition-opacity duration-500 md:gap-2",
+            works.length === 0 ? "min-h-24" : "min-h-[36vh] md:min-h-[56vh]",
             visible ? "opacity-100" : "opacity-0",
           )}
         >
+          {works.length === 0 ? (
+            <p className="font-label-sm text-label-sm py-16 text-center tracking-widest text-outline uppercase">
+              Sin fotos todavía
+            </p>
+          ) : null}
           {current.map((row, rowIndex) => (
             <div key={rowIndex} className="flex items-center justify-center gap-1.5 md:gap-2">
               {row.map((work) => (

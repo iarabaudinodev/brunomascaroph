@@ -98,7 +98,9 @@ export function WorksSection({
       !imageUrlsOf(next).includes(work.src) &&
       !imageUrlsOf(site).includes(work.src)
     ) {
-      void deleteFiles([work.src]);
+      void deleteFiles([work.src]).catch(() => {
+        setUploadError("La obra se quitó, pero la imagen sigue en el almacenamiento.");
+      });
     }
   }
 

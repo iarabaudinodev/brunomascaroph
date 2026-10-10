@@ -7,6 +7,7 @@ import {
   type Unsubscribe,
 } from "firebase/firestore";
 import { site as fallbackSite } from "@/content/site";
+import { resolveTheme } from "@/content/theme";
 import type { SiteConfig } from "@/content/types";
 import { getFirebaseApp } from "./firebase-app";
 import {
@@ -23,15 +24,6 @@ function getDb() {
   return app ? getFirestore(app) : null;
 }
 
-function mergeNav(remote: SiteConfig["nav"] | undefined, fallback: SiteConfig["nav"]) {
-  const nav = remote?.length ? remote : fallback;
-  return nav.map((item) =>
-    item.id === "galeria" && item.label === "Work"
-      ? { ...item, label: "mi Trabajo" }
-      : item,
-  );
-}
-
 export function mergeSite(
   remote: Partial<SiteConfig> | undefined,
   fallback: SiteConfig = fallbackSite,
@@ -44,11 +36,12 @@ export function mergeSite(
     photographer: {
       ...fallback.photographer,
       ...remote.photographer,
-      shortName:
-        remote.photographer?.shortName?.trim() || fallback.photographer.shortName,
+      logo: remote.photographer?.logo ?? fallback.photographer.logo,
+      shortName: remote.photographer?.shortName ?? fallback.photographer.shortName,
     },
+    theme: resolveTheme({ ...fallback.theme, ...remote.theme }),
     seo: { ...fallback.seo, ...remote.seo },
-    nav: mergeNav(remote.nav, fallback.nav),
+    nav: remote.nav?.length ? remote.nav : fallback.nav,
     hero: {
       ...fallback.hero,
       ...remote.hero,
@@ -64,10 +57,6 @@ export function mergeSite(
     about: {
       ...fallback.about,
       ...remote.about,
-      bio: (remote.about?.bio ?? fallback.about.bio).replace(
-        /\s*—\s*y también la base de la plantilla que uso para otros portfolios\.?/gi,
-        "",
-      ),
       rows: remote.about?.rows ?? fallback.about.rows,
     },
     contact: {

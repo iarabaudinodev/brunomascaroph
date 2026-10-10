@@ -47,7 +47,7 @@ export function AdminButton({
       className={cn(
         "font-label-md text-label-md cursor-pointer px-6 py-3 tracking-[0.16em] uppercase transition-all duration-300 disabled:cursor-wait disabled:opacity-60",
         variant === "primary" &&
-          "bg-primary text-on-primary hover:bg-surface hover:text-primary hover:outline hover:outline-1 hover:outline-primary",
+          "bg-button text-on-button hover:bg-surface hover:text-primary hover:outline hover:outline-1 hover:outline-primary",
         variant === "ghost" &&
           "text-on-surface-variant hover:text-primary",
         variant === "danger" &&
@@ -64,12 +64,14 @@ export function ImageField({
   value,
   folder,
   retainUrl,
+  accept = "image/jpeg,image/png,image/webp,image/gif,image/avif",
   onChange,
 }: {
   label: string;
   value: string;
   folder: string;
   retainUrl?: string;
+  accept?: string;
   onChange: (url: string) => void;
 }) {
   const [busy, setBusy] = useState(false);
@@ -82,7 +84,9 @@ export function ImageField({
     try {
       const url = await uploadFile(file, folder);
       if (value && value !== url && value !== retainUrl) {
-        void deleteFiles([value]);
+        void deleteFiles([value]).catch(() => {
+          setError("Se reemplazó la imagen, pero la anterior sigue en el almacenamiento.");
+        });
       }
       onChange(url);
     } catch (err) {
@@ -98,7 +102,7 @@ export function ImageField({
         {busy ? "Subiendo…" : "Elegir archivo"}
         <input
           type="file"
-          accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
+          accept={accept}
           className="sr-only"
           disabled={busy}
           onChange={(event) => {
@@ -111,10 +115,27 @@ export function ImageField({
         <span className="font-label-sm text-label-sm text-error">{error}</span>
       ) : null}
       {value ? (
-        <div className="relative mt-3 h-32 w-48 overflow-hidden bg-surface-container-lowest">
-          {/* preview de admin */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={value} alt="" className="h-full w-full object-cover" />
+        <div className="mt-3 flex items-end gap-4">
+          <div className="relative h-32 w-48 overflow-hidden bg-surface-container-lowest">
+            {/* preview de admin */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={value} alt="" className="h-full w-full object-contain" />
+          </div>
+          <button
+            type="button"
+            className="font-label-sm text-label-sm cursor-pointer tracking-widest text-outline uppercase hover:text-primary"
+            onClick={() => {
+              const current = value;
+              onChange("");
+              if (current && current !== retainUrl) {
+                void deleteFiles([current]).catch(() => {
+                  setError("Se quitó del formulario, pero el archivo sigue guardado.");
+                });
+              }
+            }}
+          >
+            Quitar
+          </button>
         </div>
       ) : null}
     </AdminField>

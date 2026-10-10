@@ -18,9 +18,14 @@ const ALLOWED_TYPES = new Set([
   "image/webp",
   "image/gif",
   "image/avif",
+  "image/svg+xml",
 ]);
 
-const FOLDERS = new Set(["hero", "portrait", "works", "misc"]);
+const FOLDERS = new Set(["hero", "portrait", "works", "logo", "misc"]);
+
+function isSvgFile(file: File) {
+  return file.type === "image/svg+xml" || file.name.toLowerCase().endsWith(".svg");
+}
 const MAX_BYTES = 12 * 1024 * 1024;
 
 async function isAuthorized(request: Request) {
@@ -101,11 +106,28 @@ export async function POST(request: Request) {
     }
 
     for (const file of incoming) {
-      if (!ALLOWED_TYPES.has(file.type) || file.size > MAX_BYTES) {
+      const svg = isSvgFile(file);
+      if (file.size > MAX_BYTES || (!svg && !ALLOWED_TYPES.has(file.type))) {
         return Response.json(
-          { error: "Solo imágenes (jpg, png, webp, gif, avif) de hasta 12 MB." },
+          { error: "Solo imágenes (jpg, png, webp, gif, avif o svg de logo) de hasta 12 MB." },
           { status: 400 },
         );
+      }
+
+      if (svg && folder !== "logo") {
+        return Response.json({ error: "El SVG solo sirve para el logo." }, { status: 400 });
+      }
+
+      if (svg) {
+        const bytes = Buffer.from(await file.arrayBuffer());
+        const name = uniqueName(".svg");
+        if (useSupabase) {
+          urls.push(await uploadToSupabase(`${folder}/${name}`, bytes, "image/svg+xml"));
+        } else {
+          await writeFile(path.join(localDir, name), bytes);
+          urls.push(`/uploads/${folder}/${name}`);
+        }
+        continue;
       }
 
       const original = Buffer.from(await file.arrayBuffer());
@@ -157,8 +179,11 @@ export async function DELETE(request: Request) {
       ...new Set(urls.map(objectKeyFromUrl).filter(Boolean)),
     ] as string[];
 
-    if (!keys.length) {
-      return Response.json({ ok: true, deleted: 0 });
+    if (!keys.length || keys.length !== urls.length) {
+      return Response.json(
+        { error: "No se pudo identificar una imagen para borrarla del almacenamiento." },
+        { status: 400 },
+      );
     }
 
     if (isSupabaseConfigured()) {

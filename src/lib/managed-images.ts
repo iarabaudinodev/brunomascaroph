@@ -3,7 +3,12 @@ import type { SiteConfig } from "@/content/types";
 export function imageUrlsOf(site: SiteConfig) {
   return [
     ...new Set(
-      [site.hero.image, site.about.portrait, ...site.gallery.works.map((work) => work.src)].filter(
+      [
+        site.photographer.logo,
+        site.hero.image,
+        site.about.portrait,
+        ...site.gallery.works.map((work) => work.src),
+      ].filter(
         Boolean,
       ),
     ),

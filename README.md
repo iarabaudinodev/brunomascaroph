@@ -13,7 +13,7 @@ No se usa Firebase Storage.
 ## Cómo reutilizarlo
 
 1. Cloná este repo para el nuevo cliente.
-2. `src/content/site.ts` es el contenido inicial / fallback.
+2. El sitio arranca en blanco. En `/admin`, **Apariencia** cambia colores y logo; el resto de secciones cambia textos y fotos.
 3. Copiá `.env.example` a `.env.local`.
 4. Firebase: Authentication (email/contraseña) + Firestore. Publicá `firestore.rules`. Creá el usuario admin.
 5. Supabase: bucket público `uploads`. Corré `supabase-storage.sql`. Pegá URL, anon y `service_role`.
@@ -23,7 +23,7 @@ Sin keys, el panel funciona en modo local y las fotos van a `public/uploads`.
 
 ## Panel
 
-`/admin` — identidad, bio, contacto, categorías, obras y consultas.
+`/admin` — apariencia (colores y logo), identidad, bio, contacto, categorías, obras y consultas.
 
 ## Scripts
 

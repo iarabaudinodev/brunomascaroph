@@ -27,6 +27,11 @@ export type NavItem = {
   id: string;
 };
 
+export type FooterLink = {
+  label: string;
+  href: string;
+};
+
 export type SiteTheme = {
   background: string;
   text: string;
@@ -48,6 +53,8 @@ export type SiteConfig = {
     instagram: string;
     instagramUrl: string;
     email: string;
+    phone: string;
+    links: FooterLink[];
   };
   theme: SiteTheme;
   seo: {

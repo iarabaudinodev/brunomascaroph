@@ -2,47 +2,71 @@
 
 import Link from "next/link";
 import { useSite } from "@/content/site-context";
-import { SectionFade } from "./SectionFade";
+
+const CREDIT_URL = "https://www.iarabaudinodev.com.ar";
+
+function externalHref(href: string) {
+  const value = href.trim();
+  if (/^(https?:|mailto:|tel:)/i.test(value)) return value;
+  return `https://${value.replace(/^\/\//, "")}`;
+}
 
 export function Footer() {
   const site = useSite();
   const year = new Date().getFullYear();
+  const { photographer } = site;
+  const phone = photographer.phone?.trim() ?? "";
+  const links = [
+    phone
+      ? { label: phone, href: `tel:${phone.replace(/[^\d+]/g, "")}` }
+      : null,
+    photographer.email
+      ? { label: "Email", href: `mailto:${photographer.email}` }
+      : null,
+    photographer.instagramUrl
+      ? {
+          label: photographer.instagram.trim() || "Instagram",
+          href: externalHref(photographer.instagramUrl),
+        }
+      : null,
+    ...(photographer.links ?? [])
+      .filter((link) => link.label.trim() && link.href.trim())
+      .map((link) => ({
+        label: link.label.trim(),
+        href: externalHref(link.href),
+      })),
+  ].filter((link): link is { label: string; href: string } => Boolean(link));
 
   return (
-    <footer className="relative w-full bg-surface">
-      <SectionFade edge="top" />
-      <div className="flex w-full flex-col items-center justify-between gap-6 px-margin-mobile py-10 text-center md:flex-row md:px-margin-tablet md:py-editorial-gap-md md:text-left lg:px-margin-desktop">
-        <div className="font-label-sm text-label-sm tracking-widest text-outline uppercase">
-          {site.photographer.name ? `${site.photographer.name} © ${year}` : `© ${year}`}
-        </div>
-        <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-3 md:justify-end md:gap-editorial-gap-sm">
-          {site.photographer.instagramUrl ? (
+    <footer className="w-full border-t border-outline-variant/30 bg-surface">
+      <div className="flex flex-col gap-1 px-margin-mobile py-2.5 md:flex-row md:items-center md:justify-between md:gap-4 md:px-margin-tablet md:py-3 lg:px-margin-desktop">
+        <p className="font-label-sm text-label-sm text-center tracking-widest text-outline uppercase md:text-left">
+          {photographer.name ? `${photographer.name} © ${year}` : `© ${year}`}
+        </p>
+        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 md:justify-end">
+          {links.map((link) => (
             <a
-              href={site.photographer.instagramUrl}
-              target="_blank"
-              rel="noreferrer"
+              key={`${link.label}-${link.href}`}
+              href={link.href}
+              {...(link.href.startsWith("http")
+                ? { target: "_blank", rel: "noreferrer" }
+                : {})}
               className="font-label-sm text-label-sm tracking-widest text-on-surface-variant uppercase transition-colors hover:text-primary"
             >
-              Instagram
+              {link.label}
             </a>
-          ) : null}
-          {site.photographer.email ? (
-            <a
-              href={`mailto:${site.photographer.email}`}
-              className="font-label-sm text-label-sm tracking-widest text-on-surface-variant uppercase transition-colors hover:text-primary"
-            >
-              Email
-            </a>
-          ) : null}
+          ))}
           <a
-            href="#top"
+            href={CREDIT_URL}
+            target="_blank"
+            rel="noreferrer"
             className="font-label-sm text-label-sm tracking-widest text-on-surface-variant uppercase transition-colors hover:text-primary"
           >
-            Volver arriba
+            Desarrollo Iara Baudino
           </a>
           <Link
             href="/admin"
-            className="font-label-sm text-label-sm tracking-widest text-on-surface-variant uppercase transition-colors hover:text-primary"
+            className="font-label-sm text-label-sm tracking-widest text-outline uppercase transition-colors hover:text-primary"
           >
             Admin
           </Link>

@@ -103,6 +103,90 @@ export function ContactSection({
           }
         />
       </AdminField>
+      <AdminField label="Teléfono" htmlFor="phone">
+        <input
+          id="phone"
+          type="tel"
+          className="field-input"
+          value={draft.photographer.phone ?? ""}
+          onChange={(event) =>
+            setDraft({
+              ...draft,
+              photographer: { ...draft.photographer, phone: event.target.value },
+            })
+          }
+        />
+      </AdminField>
+
+      <div className="flex flex-col gap-4">
+        <span className="font-label-sm text-label-sm tracking-widest text-outline uppercase">
+          Otras redes del footer
+        </span>
+        {(draft.photographer.links ?? []).map((link, index) => (
+          <div key={index} className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1.4fr_auto]">
+            <input
+              className="field-input"
+              placeholder="Nombre"
+              value={link.label}
+              onChange={(event) =>
+                setDraft({
+                  ...draft,
+                  photographer: {
+                    ...draft.photographer,
+                    links: draft.photographer.links.map((item, itemIndex) =>
+                      itemIndex === index ? { ...item, label: event.target.value } : item,
+                    ),
+                  },
+                })
+              }
+            />
+            <input
+              className="field-input"
+              placeholder="https://"
+              value={link.href}
+              onChange={(event) =>
+                setDraft({
+                  ...draft,
+                  photographer: {
+                    ...draft.photographer,
+                    links: draft.photographer.links.map((item, itemIndex) =>
+                      itemIndex === index ? { ...item, href: event.target.value } : item,
+                    ),
+                  },
+                })
+              }
+            />
+            <AdminButton
+              variant="danger"
+              onClick={() =>
+                setDraft({
+                  ...draft,
+                  photographer: {
+                    ...draft.photographer,
+                    links: draft.photographer.links.filter((_, itemIndex) => itemIndex !== index),
+                  },
+                })
+              }
+            >
+              Quitar
+            </AdminButton>
+          </div>
+        ))}
+        <AdminButton
+          variant="ghost"
+          onClick={() =>
+            setDraft({
+              ...draft,
+              photographer: {
+                ...draft.photographer,
+                links: [...(draft.photographer.links ?? []), { label: "", href: "" }],
+              },
+            })
+          }
+        >
+          + Agregar red
+        </AdminButton>
+      </div>
 
       <div className="flex flex-col gap-4">
         <span className="font-label-sm text-label-sm tracking-widest text-outline uppercase">

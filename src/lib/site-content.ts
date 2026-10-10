@@ -38,6 +38,8 @@ export function mergeSite(
       ...remote.photographer,
       logo: remote.photographer?.logo ?? fallback.photographer.logo,
       shortName: remote.photographer?.shortName ?? fallback.photographer.shortName,
+      phone: remote.photographer?.phone ?? fallback.photographer.phone,
+      links: remote.photographer?.links ?? fallback.photographer.links,
     },
     theme: resolveTheme({ ...fallback.theme, ...remote.theme }),
     seo: { ...fallback.seo, ...remote.seo },

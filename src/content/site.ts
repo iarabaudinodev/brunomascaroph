@@ -18,6 +18,8 @@ export const site: SiteConfig = {
     instagram: "",
     instagramUrl: "",
     email: "",
+    phone: "",
+    links: [],
   },
   theme: defaultTheme,
   seo: {

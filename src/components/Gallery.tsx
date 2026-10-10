@@ -199,8 +199,8 @@ export function Gallery() {
           goTo(page + (delta < 0 ? 1 : -1));
         }}
       >
-        <SectionFade edge="top" className="h-8 md:h-36" />
-        <SectionFade edge="bottom" className="h-8 md:h-28" />
+        <SectionFade edge="top" className="max-md:hidden" />
+        <SectionFade edge="bottom" className="max-md:hidden" />
         <div
           className={cn(
             "flex flex-col justify-center gap-1.5 transition-opacity duration-500 md:gap-2",

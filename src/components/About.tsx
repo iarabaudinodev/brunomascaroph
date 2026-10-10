@@ -15,8 +15,8 @@ export function About() {
       id="sobre-mi"
       className="relative w-full bg-surface pt-0 pb-16 md:pb-24 lg:px-margin-desktop lg:py-editorial-gap-xl"
     >
-      <SectionFade edge="top" className="h-8 md:h-36" />
-      <SectionFade edge="bottom" className="h-10 md:h-36" />
+      <SectionFade edge="top" className="max-md:hidden" />
+      <SectionFade edge="bottom" className="max-md:hidden" />
       <div className="relative z-20 grid grid-cols-1 lg:grid-cols-12 lg:items-center lg:gap-12 lg:gap-gutter-desktop">
         {hasPortrait ? (
           <div className="relative lg:col-span-5">
@@ -34,9 +34,9 @@ export function About() {
 
         <div
           className={cn(
-            "relative z-20 flex flex-col px-margin-mobile pt-8 md:px-margin-tablet md:pt-10 lg:mt-0 lg:px-0 lg:pt-0",
+            "relative z-20 flex flex-col px-margin-mobile pt-6 md:px-margin-tablet md:pt-10 lg:mt-0 lg:px-0 lg:pt-0",
             hasPortrait
-              ? "-mt-8 md:-mt-10 lg:col-span-7 lg:pl-8"
+              ? "lg:col-span-7 lg:pl-8"
               : "lg:col-span-12 lg:px-0",
           )}
         >

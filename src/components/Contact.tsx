@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useLayoutEffect, useRef, useState, type ReactNode, type Ref } from "react";
+import { FormEvent, useState, type ReactNode } from "react";
 import { useSite } from "@/content/site-context";
 import { isFirebaseConfigured } from "@/lib/firebase-app";
 import { submitInquiry } from "@/lib/inquiries";
@@ -39,9 +39,9 @@ export function Contact() {
       id="contacto"
       className="relative w-full bg-surface px-margin-mobile pt-16 pb-editorial-gap-md md:px-margin-tablet md:pt-editorial-gap-xl lg:px-margin-desktop"
     >
-      <SectionFade edge="top" />
-      <SectionFade edge="bottom" />
-      <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-gutter-desktop">
+      <SectionFade edge="top" className="h-8 md:h-36" />
+      <SectionFade edge="bottom" className="max-md:hidden" />
+      <div className="relative z-20 grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-gutter-desktop">
         <div className="flex min-w-0 flex-col justify-between lg:col-span-5">
           <div>
             {contact.title ? (
@@ -58,16 +58,16 @@ export function Contact() {
           {photographer.email || photographer.instagram || contact.availabilityNote ? (
           <div className="flex min-w-0 flex-col gap-6 bg-surface-container-low p-5 md:p-8">
             {photographer.email ? (
-              <div>
+              <div className="min-w-0">
                 <span className="font-label-sm text-label-sm mb-1 block tracking-widest text-outline uppercase">
                   Correo directo
                 </span>
-                <FitLine
+                <a
                   href={`mailto:${photographer.email}`}
-                  className="font-headline-sm text-headline-sm text-primary transition-colors hover:text-outline"
+                  className="font-headline-sm block max-w-full whitespace-nowrap text-[15px] leading-snug text-primary transition-colors hover:text-outline md:text-headline-sm"
                 >
                   {photographer.email}
-                </FitLine>
+                </a>
               </div>
             ) : null}
             {photographer.email && (photographer.instagram || contact.availabilityNote) ? (
@@ -79,18 +79,18 @@ export function Contact() {
                   Instagram
                 </span>
                 {photographer.instagramUrl ? (
-                  <FitLine
+                  <a
                     href={photographer.instagramUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="font-label-md text-label-md tracking-widest text-on-surface-variant transition-colors hover:text-primary"
+                    className="font-label-md text-label-md block max-w-full truncate tracking-widest text-on-surface-variant transition-colors hover:text-primary"
                   >
                     {photographer.instagram}
-                  </FitLine>
+                  </a>
                 ) : (
-                  <FitLine className="font-label-md text-label-md tracking-widest text-on-surface-variant">
+                  <p className="font-label-md text-label-md max-w-full truncate tracking-widest text-on-surface-variant">
                     {photographer.instagram}
-                  </FitLine>
+                  </p>
                 )}
               </div>
             ) : null}
@@ -186,63 +186,6 @@ export function Contact() {
         </div>
       </div>
     </section>
-  );
-}
-
-function FitLine({
-  href,
-  className,
-  children,
-  target,
-  rel,
-}: {
-  href?: string;
-  className?: string;
-  children: ReactNode;
-  target?: string;
-  rel?: string;
-}) {
-  const ref = useRef<HTMLElement>(null);
-
-  useLayoutEffect(() => {
-    const el = ref.current;
-    const parent = el?.parentElement;
-    if (!el || !parent) return;
-
-    const fit = () => {
-      el.style.fontSize = "";
-      const available = el.clientWidth;
-      const needed = el.scrollWidth;
-      if (available <= 0 || needed <= available) return;
-      const base = parseFloat(getComputedStyle(el).fontSize);
-      el.style.fontSize = `${Math.max(11, (base * available) / needed)}px`;
-      if (el.scrollWidth > el.clientWidth) {
-        const current = parseFloat(getComputedStyle(el).fontSize);
-        el.style.fontSize = `${Math.max(11, (current * el.clientWidth) / el.scrollWidth)}px`;
-      }
-    };
-
-    fit();
-    void document.fonts?.ready.then(fit);
-    const observer = new ResizeObserver(fit);
-    observer.observe(parent);
-    return () => observer.disconnect();
-  }, [children]);
-
-  const classes = `block w-full whitespace-nowrap ${className ?? ""}`;
-
-  if (href) {
-    return (
-      <a ref={ref as Ref<HTMLAnchorElement>} href={href} target={target} rel={rel} className={classes}>
-        {children}
-      </a>
-    );
-  }
-
-  return (
-    <p ref={ref as Ref<HTMLParagraphElement>} className={classes}>
-      {children}
-    </p>
   );
 }
 

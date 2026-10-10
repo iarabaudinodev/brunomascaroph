@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { layoutFromWork, WORK_LAYOUTS } from "@/content/layouts";
+import { WORK_LAYOUTS } from "@/content/layouts";
 import type { SiteConfig, WorkItem } from "@/content/types";
 import { imageUrlsOf } from "@/lib/managed-images";
 import { uniqueSlug } from "@/lib/slug";
 import { deleteFiles, uploadFiles } from "@/lib/upload";
-import { AdminButton, AdminField, FileDrop, ImageField, SaveRow } from "./fields";
+import { AdminButton, AdminField, FileDrop, SaveRow } from "./fields";
 import { useSectionSave } from "./use-section-save";
 
 function emptyWork(categories: SiteConfig["gallery"]["categories"]): WorkItem {
@@ -36,9 +36,11 @@ export function WorksSection({
   onSaved: (next: SiteConfig) => void;
 }) {
   const [draft, setDraft] = useState(site);
-  const [editing, setEditing] = useState<WorkItem | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [batchCategory, setBatchCategory] = useState("");
+  const [batchMeta, setBatchMeta] = useState("");
   const { save, saving, message } = useSectionSave(onSaved, site);
   const assignable = draft.gallery.categories.filter((category) => category.id !== "all");
 
@@ -73,13 +75,48 @@ export function WorksSection({
     }
   }
 
-  function upsert(work: WorkItem) {
-    const exists = draft.gallery.works.some((item) => item.id === work.id);
-    const works = exists
-      ? draft.gallery.works.map((item) => (item.id === work.id ? work : item))
-      : [...draft.gallery.works, work];
-    setDraft({ ...draft, gallery: { ...draft.gallery, works } });
-    setEditing(null);
+  function patch(id: string, partial: Partial<WorkItem>) {
+    setDraft({
+      ...draft,
+      gallery: {
+        ...draft.gallery,
+        works: draft.gallery.works.map((work) =>
+          work.id === id
+            ? {
+                ...work,
+                ...partial,
+                alt: partial.title !== undefined ? partial.title : work.alt,
+              }
+            : work,
+        ),
+      },
+    });
+  }
+
+  function toggleSelected(id: string) {
+    setSelectedIds((current) =>
+      current.includes(id) ? current.filter((item) => item !== id) : [...current, id],
+    );
+  }
+
+  function applyBatch() {
+    if (!selectedIds.length) return;
+    const meta = batchMeta.trim();
+    setDraft({
+      ...draft,
+      gallery: {
+        ...draft.gallery,
+        works: draft.gallery.works.map((work) =>
+          selectedIds.includes(work.id)
+            ? {
+                ...work,
+                ...(batchCategory ? { category: batchCategory } : {}),
+                ...(meta ? { meta } : {}),
+              }
+            : work,
+        ),
+      },
+    });
   }
 
   function remove(id: string) {
@@ -92,7 +129,7 @@ export function WorksSection({
       },
     };
     setDraft(next);
-    if (editing?.id === id) setEditing(null);
+    setSelectedIds((current) => current.filter((item) => item !== id));
     if (
       work?.src &&
       !imageUrlsOf(next).includes(work.src) &&
@@ -110,9 +147,6 @@ export function WorksSection({
         <span className="font-label-sm text-label-sm tracking-widest text-outline uppercase">
           {draft.gallery.works.length} obras
         </span>
-        <AdminButton variant="ghost" onClick={() => setEditing(emptyWork(draft.gallery.categories))}>
-          + Nueva obra
-        </AdminButton>
       </div>
       <FileDrop
         accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
@@ -141,18 +175,38 @@ export function WorksSection({
                 <img src={work.src} alt="" className="h-full w-full object-cover" />
               ) : null}
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="font-body-md text-body-md text-primary">
-                {work.title || "Sin título"}
-              </p>
-              <p className="font-label-sm text-label-sm tracking-widest text-outline uppercase">
-                {draft.gallery.categories.find((category) => category.id === work.category)
-                  ?.label ?? work.category}
-              </p>
-              <div className="mt-2 flex gap-3">
-                <AdminButton variant="ghost" onClick={() => setEditing(work)}>
-                  Editar
-                </AdminButton>
+            <div className="flex min-w-0 flex-1 flex-col gap-3">
+              <label className="font-label-sm text-label-sm flex items-center gap-2 tracking-widest text-outline uppercase">
+                <input
+                  type="checkbox"
+                  checked={selectedIds.includes(work.id)}
+                  onChange={() => toggleSelected(work.id)}
+                />
+                Incluir en el lote
+              </label>
+              <input
+                className="field-input"
+                aria-label="Nombre"
+                value={work.title}
+                onChange={(event) => patch(work.id, { title: event.target.value })}
+              />
+              <select
+                className="field-input cursor-pointer appearance-none"
+                aria-label="Categoría"
+                value={work.category}
+                onChange={(event) => patch(work.id, { category: event.target.value })}
+              >
+                {assignable.map((category) => (
+                  <option
+                    key={category.id}
+                    value={category.id}
+                    className="bg-surface-container-high text-primary"
+                  >
+                    {category.label}
+                  </option>
+                ))}
+              </select>
+              <div>
                 <AdminButton variant="danger" onClick={() => remove(work.id)}>
                   Eliminar
                 </AdminButton>
@@ -162,148 +216,65 @@ export function WorksSection({
         ))}
       </div>
 
-      {editing ? (
-        <WorkEditor
-          work={editing}
-          categories={assignable}
-          onCancel={() => setEditing(null)}
-          onSave={(work) => {
-            const id =
-              work.title && work.id.startsWith("obra-")
-                ? uniqueSlug(
-                    work.title,
-                    draft.gallery.works
-                      .filter((item) => item.id !== work.id)
-                      .map((item) => item.id),
-                  )
-                : work.id;
-            upsert({ ...work, id, alt: work.alt || work.title });
-          }}
-        />
-      ) : null}
-
-      <SaveRow onSave={() => save(draft)} saving={saving} message={message} />
-    </div>
-  );
-}
-
-function WorkEditor({
-  work,
-  categories,
-  onSave,
-  onCancel,
-}: {
-  work: WorkItem;
-  categories: SiteConfig["gallery"]["categories"];
-  onSave: (work: WorkItem) => void;
-  onCancel: () => void;
-}) {
-  const [draft, setDraft] = useState(work);
-  const layoutId = layoutFromWork(draft.span, draft.aspect);
-
-  function applyLayout(id: string) {
-    const layout = WORK_LAYOUTS.find((item) => item.id === id) ?? WORK_LAYOUTS[0];
-    setDraft({
-      ...draft,
-      span: layout.span,
-      aspect: layout.aspect,
-      className: layout.className || undefined,
-    });
-  }
-
-  return (
-    <div className="flex flex-col gap-6 bg-surface-container-low p-6">
-      <AdminField label="Título" htmlFor="work-title">
-        <input
-          id="work-title"
-          className="field-input"
-          value={draft.title}
-          onChange={(event) => setDraft({ ...draft, title: event.target.value })}
-        />
-      </AdminField>
-      <AdminField label="Meta (serie, medio, lugar)" htmlFor="work-meta">
-        <input
-          id="work-meta"
-          className="field-input"
-          value={draft.meta}
-          onChange={(event) => setDraft({ ...draft, meta: event.target.value })}
-        />
-      </AdminField>
-      <ImageField
-        label="Imagen"
-        value={draft.src}
-        folder="works"
-        retainUrl={work.src}
-        onChange={(src) => setDraft({ ...draft, src })}
-      />
-      <AdminField label="Texto alternativo" htmlFor="work-alt">
-        <input
-          id="work-alt"
-          className="field-input"
-          value={draft.alt}
-          onChange={(event) => setDraft({ ...draft, alt: event.target.value })}
-        />
-      </AdminField>
-      <AdminField label="Categoría" htmlFor="work-cat">
-        <select
-          id="work-cat"
-          className="field-input cursor-pointer appearance-none"
-          value={draft.category}
-          onChange={(event) => setDraft({ ...draft, category: event.target.value })}
-        >
-          {categories.map((category) => (
-            <option
-              key={category.id}
-              value={category.id}
-              className="bg-surface-container-high text-primary"
-            >
-              {category.label}
+      <div className="flex flex-col gap-6 border border-outline-variant/40 p-5">
+        <div>
+          <p className="font-label-sm text-label-sm tracking-widest text-outline uppercase">
+            Editar por lote
+          </p>
+          <p className="font-body-md text-body-md mt-2 text-on-surface-variant">
+            Marcá las fotos y aplicales la misma categoría. El texto de abajo es
+            opcional: aparece junto al nombre cuando se abre la foto. Sirve para
+            una serie, un año o un lugar, por ejemplo «Buenos Aires, 2024». Si lo
+            dejás vacío, no se modifica.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-3">
+          <AdminButton
+            variant="ghost"
+            onClick={() => setSelectedIds(draft.gallery.works.map((work) => work.id))}
+          >
+            Todas
+          </AdminButton>
+          <AdminButton variant="ghost" onClick={() => setSelectedIds([])}>
+            Ninguna
+          </AdminButton>
+        </div>
+        <AdminField label="Categoría del lote" htmlFor="batch-cat">
+          <select
+            id="batch-cat"
+            className="field-input cursor-pointer appearance-none"
+            value={batchCategory}
+            onChange={(event) => setBatchCategory(event.target.value)}
+          >
+            <option value="" className="bg-surface-container-high text-primary">
+              No cambiar
             </option>
-          ))}
-        </select>
-      </AdminField>
-      <AdminField label="Formato en la grilla" htmlFor="work-layout">
-        <select
-          id="work-layout"
-          className="field-input cursor-pointer appearance-none"
-          value={layoutId}
-          onChange={(event) => applyLayout(event.target.value)}
-        >
-          {WORK_LAYOUTS.map((layout) => (
-            <option
-              key={layout.id}
-              value={layout.id}
-              className="bg-surface-container-high text-primary"
-            >
-              {layout.label}
-            </option>
-          ))}
-        </select>
-      </AdminField>
-      <label className="font-label-sm text-label-sm flex items-center gap-3 tracking-widest text-on-surface-variant uppercase">
-        <input
-          type="checkbox"
-          checked={Boolean(draft.grayscale)}
-          onChange={(event) =>
-            setDraft({ ...draft, grayscale: event.target.checked })
-          }
-        />
-        Blanco y negro
-      </label>
-      <div className="flex items-center gap-4">
-        <AdminButton onClick={() => onSave(draft)}>Listo</AdminButton>
-        <AdminButton
-          variant="ghost"
-          onClick={() => {
-            if (draft.src && draft.src !== work.src) {
-              void deleteFiles([draft.src]);
-            }
-            onCancel();
-          }}
-        >
-          Cancelar
+            {assignable.map((category) => (
+              <option
+                key={category.id}
+                value={category.id}
+                className="bg-surface-container-high text-primary"
+              >
+                {category.label}
+              </option>
+            ))}
+          </select>
+        </AdminField>
+        <AdminField label="Texto al abrir la foto" htmlFor="batch-meta">
+          <input
+            id="batch-meta"
+            className="field-input"
+            value={batchMeta}
+            placeholder="Buenos Aires, 2024"
+            onChange={(event) => setBatchMeta(event.target.value)}
+          />
+        </AdminField>
+        <AdminButton onClick={applyBatch} disabled={!selectedIds.length}>
+          Aplicar a {selectedIds.length || "las"} seleccionadas
         </AdminButton>
       </div>
+
+      <SaveRow onSave={() => save(draft)} saving={saving} message={message} />
     </div>
   );
 }

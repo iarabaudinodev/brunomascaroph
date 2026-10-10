@@ -6,7 +6,7 @@ import type { SiteConfig, WorkItem } from "@/content/types";
 import { imageUrlsOf } from "@/lib/managed-images";
 import { uniqueSlug } from "@/lib/slug";
 import { deleteFiles, uploadFiles } from "@/lib/upload";
-import { AdminButton, AdminField, ImageField, SaveRow } from "./fields";
+import { AdminButton, AdminField, FileDrop, ImageField, SaveRow } from "./fields";
 import { useSectionSave } from "./use-section-save";
 
 function emptyWork(categories: SiteConfig["gallery"]["categories"]): WorkItem {
@@ -42,8 +42,8 @@ export function WorksSection({
   const { save, saving, message } = useSectionSave(onSaved, site);
   const assignable = draft.gallery.categories.filter((category) => category.id !== "all");
 
-  async function addFromFiles(fileList: FileList | null) {
-    const files = fileList ? Array.from(fileList) : [];
+  async function addFromFiles(incoming: File[]) {
+    const files = incoming.filter(Boolean);
     if (!files.length) return;
     setUploading(true);
     setUploadError("");
@@ -110,26 +110,21 @@ export function WorksSection({
         <span className="font-label-sm text-label-sm tracking-widest text-outline uppercase">
           {draft.gallery.works.length} obras
         </span>
-        <div className="flex items-center gap-4">
-          <label className="font-label-md text-label-md cursor-pointer tracking-[0.16em] text-on-surface-variant uppercase hover:text-primary">
-            {uploading ? "Subiendo…" : "+ Subir fotos"}
-            <input
-              type="file"
-              accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
-              multiple
-              className="sr-only"
-              disabled={uploading}
-              onChange={(event) => {
-                void addFromFiles(event.target.files);
-                event.target.value = "";
-              }}
-            />
-          </label>
-          <AdminButton variant="ghost" onClick={() => setEditing(emptyWork(draft.gallery.categories))}>
-            + Nueva obra
-          </AdminButton>
-        </div>
+        <AdminButton variant="ghost" onClick={() => setEditing(emptyWork(draft.gallery.categories))}>
+          + Nueva obra
+        </AdminButton>
       </div>
+      <FileDrop
+        accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
+        multiple
+        disabled={uploading}
+        idle="Arrastrá las fotos desde la carpeta o elegí archivos"
+        busy="Subiendo…"
+        onFiles={(files) => {
+          void addFromFiles(files);
+        }}
+        onEmpty={() => setUploadError("Soltá fotos: jpg, png, webp, gif o avif.")}
+      />
       {uploadError ? (
         <p className="font-label-sm text-label-sm text-error">{uploadError}</p>
       ) : null}

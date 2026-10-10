@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useRef, useState, type DragEvent, type ReactNode } from "react";
+import { filesFromDrop } from "@/lib/drop-files";
 import { deleteFiles, uploadFile } from "@/lib/upload";
 import { cn } from "@/lib/cn";
 
@@ -59,6 +60,103 @@ export function AdminButton({
   );
 }
 
+export function FileDrop({
+  accept,
+  multiple = false,
+  disabled = false,
+  idle,
+  busy,
+  onFiles,
+  onEmpty,
+}: {
+  accept: string;
+  multiple?: boolean;
+  disabled?: boolean;
+  idle: string;
+  busy: string;
+  onFiles: (files: File[]) => void;
+  onEmpty?: () => void;
+}) {
+  const [over, setOver] = useState(false);
+  const depth = useRef(0);
+
+  function allowsDrop(event: DragEvent<HTMLDivElement>) {
+    return event.dataTransfer.types.includes("Files");
+  }
+
+  function onDragEnter(event: DragEvent<HTMLDivElement>) {
+    if (disabled || !allowsDrop(event)) return;
+    event.preventDefault();
+    depth.current += 1;
+    setOver(true);
+  }
+
+  function onDragOver(event: DragEvent<HTMLDivElement>) {
+    if (disabled || !allowsDrop(event)) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "copy";
+  }
+
+  function onDragLeave(event: DragEvent<HTMLDivElement>) {
+    if (!allowsDrop(event)) return;
+    event.preventDefault();
+    depth.current = Math.max(0, depth.current - 1);
+    if (depth.current === 0) setOver(false);
+  }
+
+  async function onDrop(event: DragEvent<HTMLDivElement>) {
+    if (!allowsDrop(event)) return;
+    event.preventDefault();
+    depth.current = 0;
+    setOver(false);
+    if (disabled) return;
+    const files = await filesFromDrop(event.dataTransfer, accept);
+    const picked = multiple ? files : files.slice(0, 1);
+    if (!picked.length) {
+      onEmpty?.();
+      return;
+    }
+    onFiles(picked);
+  }
+
+  return (
+    <div
+      onDragEnter={onDragEnter}
+      onDragOver={onDragOver}
+      onDragLeave={onDragLeave}
+      onDrop={(event) => {
+        void onDrop(event);
+      }}
+      className={cn(
+        "flex flex-col items-center justify-center gap-3 border border-dashed px-4 py-6 text-center transition-colors",
+        over
+          ? "border-primary bg-surface-container-low text-primary"
+          : "border-outline-variant/50 text-on-surface-variant",
+        disabled && "opacity-60",
+      )}
+    >
+      <p className="font-label-sm text-label-sm tracking-widest uppercase">
+        {disabled ? busy : over ? "Soltá para subir" : idle}
+      </p>
+      <label className="font-label-sm text-label-sm cursor-pointer tracking-widest text-primary uppercase hover:opacity-80">
+        Elegir {multiple ? "archivos" : "archivo"}
+        <input
+          type="file"
+          accept={accept}
+          multiple={multiple}
+          className="sr-only"
+          disabled={disabled}
+          onChange={(event) => {
+            const files = Array.from(event.target.files ?? []);
+            event.target.value = "";
+            if (files.length) onFiles(multiple ? files : files.slice(0, 1));
+          }}
+        />
+      </label>
+    </div>
+  );
+}
+
 export function ImageField({
   label,
   value,
@@ -98,19 +196,16 @@ export function ImageField({
 
   return (
     <AdminField label={label}>
-      <label className="font-label-sm text-label-sm inline-flex cursor-pointer tracking-widest text-primary uppercase hover:opacity-80">
-        {busy ? "Subiendo…" : "Elegir archivo"}
-        <input
-          type="file"
-          accept={accept}
-          className="sr-only"
-          disabled={busy}
-          onChange={(event) => {
-            void onFile(event.target.files?.[0]);
-            event.target.value = "";
-          }}
-        />
-      </label>
+      <FileDrop
+        accept={accept}
+        disabled={busy}
+        idle="Arrastrá una imagen o elegí un archivo"
+        busy="Subiendo…"
+        onFiles={(files) => {
+          void onFile(files[0]);
+        }}
+        onEmpty={() => setError("Soltá una imagen compatible.")}
+      />
       {error ? (
         <span className="font-label-sm text-label-sm text-error">{error}</span>
       ) : null}

@@ -52,30 +52,64 @@ function readDirectory(entry: FileSystemDirectoryEntry) {
   });
 }
 
-async function collect(entry: FileSystemEntry, accept: string, found: File[], depth: number) {
+async function collect(
+  entry: FileSystemEntry,
+  push: (file: File) => void,
+  depth: number,
+) {
   if (depth > 4) return;
   if (entry.isFile) {
-    const file = await fileFromEntry(entry as FileSystemFileEntry);
-    if (matchesAccept(file, accept)) found.push(file);
+    push(await fileFromEntry(entry as FileSystemFileEntry));
     return;
   }
   if (!entry.isDirectory) return;
   const children = await readDirectory(entry as FileSystemDirectoryEntry);
-  for (const child of children) await collect(child, accept, found, depth + 1);
+  for (const child of children) await collect(child, push, depth + 1);
 }
 
+/**
+ * Devuelve los archivos soltados que cumplen `accept`.
+ * Los archivos sueltos se leen directo del evento; la API de entries
+ * (webkitGetAsEntry) se usa solo para recorrer carpetas, porque leer
+ * archivos a través de ella falla en silencio en algunos navegadores.
+ * Debe llamarse de forma sincrónica dentro del handler de drop.
+ */
 export async function filesFromDrop(data: DataTransfer | null, accept: string) {
   if (!data) return [];
 
-  const entries = Array.from(data.items)
-    .map((item) => item.webkitGetAsEntry?.() ?? null)
-    .filter((entry): entry is FileSystemEntry => Boolean(entry));
+  const found: File[] = [];
+  const seen = new Set<string>();
+  const push = (file: File) => {
+    const key = `${file.name}:${file.size}:${file.lastModified}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    if (matchesAccept(file, accept)) found.push(file);
+  };
 
-  if (entries.length) {
-    const found: File[] = [];
-    for (const entry of entries) await collect(entry, accept, found, 0);
-    return found;
+  const directories: FileSystemDirectoryEntry[] = [];
+  for (const item of Array.from(data.items ?? [])) {
+    if (item.kind !== "file") continue;
+    const entry = item.webkitGetAsEntry?.() ?? null;
+    if (entry?.isDirectory) {
+      directories.push(entry as FileSystemDirectoryEntry);
+      continue;
+    }
+    const file = item.getAsFile();
+    if (file) push(file);
   }
 
-  return Array.from(data.files).filter((file) => matchesAccept(file, accept));
+  // Navegadores sin DataTransferItemList o que solo exponen `files`.
+  if (!found.length && !directories.length) {
+    Array.from(data.files ?? []).forEach(push);
+  }
+
+  for (const directory of directories) {
+    try {
+      await collect(directory, push, 0);
+    } catch {
+      // Una carpeta ilegible no debe anular los archivos que sí se pudieron leer.
+    }
+  }
+
+  return found;
 }

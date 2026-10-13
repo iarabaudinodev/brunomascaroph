@@ -133,12 +133,19 @@ export function FileDrop({
   }
 
   async function onDrop(event: DragEvent<HTMLDivElement>) {
-    if (!allowsDrop(event)) return;
+    // Siempre se frena el drop dentro de la zona: si no, el navegador abre el archivo.
     event.preventDefault();
     depth.current = 0;
     setOver(false);
     if (disabled) return;
-    const files = await filesFromDrop(event.dataTransfer, accept);
+    // Hay que leer el DataTransfer antes de cualquier await; filesFromDrop lo hace.
+    const pending = filesFromDrop(event.dataTransfer, accept);
+    let files: File[] = [];
+    try {
+      files = await pending;
+    } catch (error) {
+      console.error("No se pudieron leer los archivos soltados.", error);
+    }
     const picked = multiple ? files : files.slice(0, 1);
     if (!picked.length) {
       onEmpty?.();

@@ -5,6 +5,7 @@ import type { SiteConfig } from "@/content/types";
 import { unusedImageUrls } from "@/lib/managed-images";
 import { saveSiteContent } from "@/lib/site-content";
 import { deleteFiles } from "@/lib/upload";
+import { useAdminFeedback } from "./admin-feedback";
 
 export function useSectionSave(
   onSaved: (next: SiteConfig) => void,
@@ -12,6 +13,7 @@ export function useSectionSave(
 ) {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const { notify } = useAdminFeedback();
 
   async function save(next: SiteConfig) {
     setSaving(true);
@@ -24,14 +26,17 @@ export function useSectionSave(
           await deleteFiles(unused);
         } catch {
           onSaved(next);
-          setMessage("Guardado. Algunas imágenes no se pudieron borrar del almacenamiento.");
-          return;
+          notify("Cambios guardados.");
+          setMessage("Algunas imágenes no se pudieron borrar del almacenamiento.");
+          return true;
         }
       }
       onSaved(next);
-      setMessage("Guardado.");
+      notify("Cambios guardados.");
+      return true;
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "No se pudo guardar.");
+      return false;
     } finally {
       setSaving(false);
     }

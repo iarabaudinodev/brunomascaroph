@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { SiteConfig } from "@/content/types";
+import { isSameContent, useUnsavedChanges } from "./admin-feedback";
 import { AdminButton, AdminField, ImageField, SaveRow } from "./fields";
 import { useSectionSave } from "./use-section-save";
 
@@ -14,6 +15,7 @@ export function BioSection({
 }) {
   const [draft, setDraft] = useState(site);
   const { save, saving, message } = useSectionSave(onSaved, site);
+  useUnsavedChanges(!isSameContent(draft, site));
 
   function updateRow(index: number, patch: { label?: string; value?: string }) {
     setDraft({

@@ -1,9 +1,37 @@
 "use client";
 
-import { useRef, useState, type DragEvent, type ReactNode } from "react";
+import {
+  useRef,
+  useState,
+  type DragEvent,
+  type ReactNode,
+  type SelectHTMLAttributes,
+} from "react";
 import { filesFromDrop } from "@/lib/drop-files";
 import { deleteFiles, uploadFile } from "@/lib/upload";
 import { cn } from "@/lib/cn";
+import { MaterialIcon } from "../MaterialIcon";
+
+export function AdminSelect({
+  className,
+  children,
+  ...props
+}: SelectHTMLAttributes<HTMLSelectElement>) {
+  return (
+    <div className="relative">
+      <select
+        {...props}
+        className={cn("field-input cursor-pointer appearance-none pr-8", className)}
+      >
+        {children}
+      </select>
+      <MaterialIcon
+        name="expand_more"
+        className="pointer-events-none absolute top-1/2 right-1 -translate-y-1/2 text-[20px] text-on-surface-variant"
+      />
+    </div>
+  );
+}
 
 export function AdminField({
   label,
@@ -46,7 +74,7 @@ export function AdminButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        "font-label-md text-label-md cursor-pointer px-6 py-3 tracking-[0.16em] uppercase transition-all duration-300 disabled:cursor-wait disabled:opacity-60",
+        "font-label-md text-label-md cursor-pointer px-6 py-3 tracking-[0.16em] uppercase transition-all duration-300 disabled:cursor-default disabled:opacity-60",
         variant === "primary" &&
           "bg-button text-on-button hover:bg-surface hover:text-primary hover:outline hover:outline-1 hover:outline-primary",
         variant === "ghost" &&
@@ -241,14 +269,16 @@ export function SaveRow({
   onSave,
   saving,
   message,
+  disabled = false,
 }: {
   onSave: () => void;
   saving: boolean;
   message: string;
+  disabled?: boolean;
 }) {
   return (
     <div className="flex items-center justify-between gap-4 pt-4">
-      <AdminButton onClick={onSave} disabled={saving}>
+      <AdminButton onClick={onSave} disabled={saving || disabled}>
         {saving ? "Guardando…" : "Guardar cambios"}
       </AdminButton>
       <span className="font-label-sm text-label-sm tracking-widest text-on-surface-variant">

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { resolveTheme } from "@/content/theme";
 import type { SiteConfig, SiteTheme } from "@/content/types";
+import { isSameContent, useUnsavedChanges } from "./admin-feedback";
 import { AdminField, ImageField, SaveRow } from "./fields";
 import { useSectionSave } from "./use-section-save";
 
@@ -27,6 +28,9 @@ export function AppearanceSection({
     theme: resolveTheme(site.theme),
   }));
   const { save, saving, message } = useSectionSave(onSaved, site);
+  useUnsavedChanges(
+    !isSameContent(draft, { ...site, theme: resolveTheme(site.theme) }),
+  );
 
   function setTheme(theme: SiteTheme) {
     setDraft({ ...draft, theme });

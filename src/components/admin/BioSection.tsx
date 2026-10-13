@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { SiteConfig } from "@/content/types";
 import { isSameContent, useUnsavedChanges } from "./admin-feedback";
-import { AdminButton, AdminField, ImageField, SaveRow } from "./fields";
+import { AdminButton, AdminField, FieldHint, ImageField, SaveRow } from "./fields";
 import { useSectionSave } from "./use-section-save";
 
 export function BioSection({
@@ -31,10 +31,19 @@ export function BioSection({
 
   return (
     <div className="flex flex-col gap-8">
-      <AdminField label="Título" htmlFor="about-title">
+      <FieldHint>
+        Todo lo de esta pestaña se ve en la sección «Sobre mí», la que viene
+        después de la galería.
+      </FieldHint>
+      <AdminField
+        label="Título"
+        htmlFor="about-title"
+        hint="Título de la sección, en mayúsculas grandes. Suele ser «Sobre mí», pero puede ser tu nombre o una frase corta."
+      >
         <input
           id="about-title"
           className="field-input"
+          placeholder="Sobre mí"
           value={draft.about.title}
           onChange={(event) =>
             setDraft({
@@ -44,7 +53,11 @@ export function BioSection({
           }
         />
       </AdminField>
-      <AdminField label="Biografía" htmlFor="bio">
+      <AdminField
+        label="Biografía"
+        htmlFor="bio"
+        hint="El texto principal de la sección, debajo del título. Contá quién sos, cómo trabajás y qué fotografiás. Dos o tres párrafos cortos funcionan mejor que uno largo; los saltos de línea se respetan."
+      >
         <textarea
           id="bio"
           rows={8}
@@ -60,6 +73,7 @@ export function BioSection({
       </AdminField>
       <ImageField
         label="Retrato"
+        hint="Tu foto, al lado del texto en pantallas grandes y arriba del texto en el celular. Se muestra en blanco y negro y en formato vertical (3:4), así que elegí una donde quedes centrado. Si la dejás vacía, el texto ocupa todo el ancho."
         value={draft.about.portrait}
         folder="portrait"
         retainUrl={site.about.portrait}
@@ -67,7 +81,11 @@ export function BioSection({
           setDraft({ ...draft, about: { ...draft.about, portrait } })
         }
       />
-      <AdminField label="Texto alternativo del retrato" htmlFor="portrait-alt">
+      <AdminField
+        label="Texto alternativo del retrato"
+        htmlFor="portrait-alt"
+        hint="Descripción breve del retrato. No se ve en pantalla: la usan los lectores de pantalla y Google. Por ejemplo «Bruno Mascaro con su cámara en el estudio»."
+      >
         <input
           id="portrait-alt"
           className="field-input"
@@ -82,9 +100,17 @@ export function BioSection({
       </AdminField>
 
       <div className="flex flex-col gap-6">
-        <span className="font-label-sm text-label-sm tracking-widest text-outline uppercase">
-          Ficha (ubicación, enfoque, etc.)
-        </span>
+        <div className="flex flex-col gap-2">
+          <span className="font-label-sm text-label-sm tracking-widest text-outline uppercase">
+            Ficha (ubicación, enfoque, etc.)
+          </span>
+          <FieldHint>
+            Lista de datos cortos que aparece debajo de la biografía, como una
+            ficha técnica: a la izquierda la etiqueta («Base», «Enfoque»,
+            «Equipo») y a la derecha el valor («Buenos Aires», «Bodas y
+            retratos»). Las filas con el valor vacío no se muestran.
+          </FieldHint>
+        </div>
         {draft.about.rows.map((row, index) => (
           <div
             key={`${row.label}-${index}`}

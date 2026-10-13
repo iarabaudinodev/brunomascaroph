@@ -48,7 +48,9 @@ export function AccountSection({ email }: { email: string }) {
     <form className="flex max-w-md flex-col gap-8" onSubmit={onSubmit}>
       <div>
         <p className="font-body-md text-body-md text-on-surface-variant">
-          La sesión sigue abierta. La próxima vez vas a entrar con la contraseña nueva.
+          Acá cambiás la contraseña con la que entrás a este panel. No afecta al
+          sitio público. La sesión sigue abierta; la próxima vez vas a entrar con
+          la contraseña nueva.
         </p>
         <p className="font-label-sm text-label-sm mt-4 tracking-widest text-outline uppercase">
           {email}
@@ -65,7 +67,11 @@ export function AccountSection({ email }: { email: string }) {
           onChange={(event) => setCurrentPassword(event.target.value)}
         />
       </AdminField>
-      <AdminField label="Nueva contraseña" htmlFor="next-password">
+      <AdminField
+        label="Nueva contraseña"
+        htmlFor="next-password"
+        hint="Mínimo 6 caracteres. Conviene mezclar letras, números y algún signo."
+      >
         <input
           id="next-password"
           type="password"

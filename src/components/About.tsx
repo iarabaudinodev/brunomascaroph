@@ -39,7 +39,7 @@ export function About() {
             {about.title}
           </h2>
           {about.bio ? (
-            <p className="font-body-lg text-body-lg mb-8 leading-relaxed text-on-surface">
+            <p className="font-body-lg text-body-lg mb-8 leading-relaxed whitespace-pre-line text-on-surface">
               {about.bio}
             </p>
           ) : null}

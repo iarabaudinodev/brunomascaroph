@@ -12,9 +12,16 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   const content = await getSiteContent();
+  const image = content.hero.image || content.about.portrait || undefined;
   return {
     title: content.seo.title,
     description: content.seo.description,
+    openGraph: {
+      title: content.seo.title,
+      description: content.seo.description,
+      type: "website",
+      ...(image ? { images: [{ url: image }] } : {}),
+    },
   };
 }
 

@@ -36,10 +36,13 @@ export function AdminSelect({
 export function AdminField({
   label,
   htmlFor,
+  hint,
   children,
 }: {
   label: string;
   htmlFor?: string;
+  /** Qué poner, dónde se ve y para qué sirve. */
+  hint?: ReactNode;
   children: ReactNode;
 }) {
   return (
@@ -50,8 +53,17 @@ export function AdminField({
       >
         {label}
       </label>
+      {hint ? <FieldHint>{hint}</FieldHint> : null}
       {children}
     </div>
+  );
+}
+
+export function FieldHint({ children }: { children: ReactNode }) {
+  return (
+    <p className="font-body-sm text-body-sm max-w-prose leading-relaxed text-on-surface-variant">
+      {children}
+    </p>
   );
 }
 
@@ -194,6 +206,7 @@ export function FileDrop({
 
 export function ImageField({
   label,
+  hint,
   value,
   folder,
   retainUrl,
@@ -201,6 +214,7 @@ export function ImageField({
   onChange,
 }: {
   label: string;
+  hint?: ReactNode;
   value: string;
   folder: string;
   retainUrl?: string;
@@ -230,7 +244,7 @@ export function ImageField({
   }
 
   return (
-    <AdminField label={label}>
+    <AdminField label={label} hint={hint}>
       <FileDrop
         accept={accept}
         disabled={busy}

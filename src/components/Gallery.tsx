@@ -6,7 +6,6 @@ import type { WorkItem } from "@/content/types";
 import { cn } from "@/lib/cn";
 import { Lightbox } from "./Lightbox";
 import { MaterialIcon } from "./MaterialIcon";
-import { SectionFade } from "./SectionFade";
 import { SmartImage } from "./SmartImage";
 
 function ratioFromAspect(aspect: string) {
@@ -133,6 +132,15 @@ export function Gallery() {
     setPage(0);
   }, [filter, works.length]);
 
+  // Si en la vista ampliada se avanza a una foto de otra página, la grilla la sigue.
+  useEffect(() => {
+    if (!selected) return;
+    const target = pages.findIndex((rows) =>
+      rows.some((row) => row.some((work) => work.id === selected.id)),
+    );
+    if (target >= 0) setPage((current) => (current === target ? current : target));
+  }, [selected, pages]);
+
   const goTo = useCallback(
     (next: number) => {
       const clamped = Math.max(0, Math.min(pageCount - 1, next));
@@ -199,8 +207,6 @@ export function Gallery() {
           goTo(page + (delta < 0 ? 1 : -1));
         }}
       >
-        <SectionFade edge="top" className="max-md:hidden" />
-        <SectionFade edge="bottom" className="max-md:hidden" />
         <div
           className={cn(
             "flex flex-col justify-center gap-1.5 transition-opacity duration-500 md:gap-2",
@@ -291,7 +297,12 @@ export function Gallery() {
         </div>
       ) : null}
 
-      <Lightbox work={selected} onClose={() => setSelected(null)} />
+      <Lightbox
+        work={selected}
+        works={works}
+        onSelect={setSelected}
+        onClose={() => setSelected(null)}
+      />
     </section>
   );
 }

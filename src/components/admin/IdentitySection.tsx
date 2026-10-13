@@ -103,8 +103,31 @@ export function IdentitySection({
         />
         Mostrar como disponible
       </label>
+
+      <div className="flex flex-col gap-3 border-t border-outline-variant/30 pt-8">
+        <label className="font-label-sm text-label-sm flex items-center gap-3 tracking-widest text-on-surface-variant uppercase">
+          <input
+            type="checkbox"
+            checked={draft.hero.enabled}
+            onChange={(event) =>
+              setDraft({
+                ...draft,
+                hero: { ...draft.hero, enabled: event.target.checked },
+              })
+            }
+          />
+          Mostrar portada (hero)
+        </label>
+        <p className="font-body-md text-body-md text-on-surface-variant">
+          La portada es la foto a pantalla completa con tu nombre que se ve al
+          entrar. Si la apagás, el sitio arranca directamente en la galería.
+        </p>
+      </div>
+
+      {draft.hero.enabled ? (
+      <>
       <ImageField
-        label="Imagen del hero"
+        label="Imagen de la portada"
         value={draft.hero.image}
         folder="hero"
         retainUrl={site.hero.image}
@@ -112,7 +135,7 @@ export function IdentitySection({
       />
       <div className="flex flex-col gap-4">
         <span className="font-label-sm text-label-sm tracking-widest text-outline uppercase">
-          Encuadre del hero
+          Encuadre de la portada
         </span>
         {draft.hero.image ? (
           <div className="relative aspect-[16/7] w-full overflow-hidden bg-surface-container-lowest">
@@ -158,7 +181,7 @@ export function IdentitySection({
           />
         </AdminField>
       </div>
-      <AdminField label="Texto alternativo del hero" htmlFor="hero-alt">
+      <AdminField label="Texto alternativo de la portada" htmlFor="hero-alt">
         <input
           id="hero-alt"
           className="field-input"
@@ -171,6 +194,9 @@ export function IdentitySection({
           }
         />
       </AdminField>
+      </>
+      ) : null}
+
       <AdminField label="Título SEO" htmlFor="seo-title">
         <input
           id="seo-title"

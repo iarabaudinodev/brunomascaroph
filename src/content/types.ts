@@ -63,6 +63,8 @@ export type SiteConfig = {
   };
   nav: NavItem[];
   hero: {
+    /** Si está apagado, la página arranca directamente en la galería. */
+    enabled: boolean;
     image: string;
     imageAlt: string;
     focusX: number;

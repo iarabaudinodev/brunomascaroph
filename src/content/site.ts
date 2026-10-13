@@ -32,6 +32,7 @@ export const site: SiteConfig = {
     { id: "contacto", href: "#contacto", label: "Contacto" },
   ],
   hero: {
+    enabled: true,
     image: "",
     imageAlt: "",
     focusX: 50,

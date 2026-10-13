@@ -47,6 +47,7 @@ export function mergeSite(
     hero: {
       ...fallback.hero,
       ...remote.hero,
+      enabled: remote.hero?.enabled ?? fallback.hero.enabled,
       focusX: remote.hero?.focusX ?? fallback.hero.focusX,
       focusY: remote.hero?.focusY ?? fallback.hero.focusY,
     },

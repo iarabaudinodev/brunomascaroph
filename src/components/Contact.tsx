@@ -4,8 +4,6 @@ import { FormEvent, useState, type ReactNode } from "react";
 import { useSite } from "@/content/site-context";
 import { isFirebaseConfigured } from "@/lib/firebase-app";
 import { submitInquiry } from "@/lib/inquiries";
-import { SectionFade } from "./SectionFade";
-
 type Status = "idle" | "sending" | "sent" | "error";
 
 export function Contact() {
@@ -39,9 +37,7 @@ export function Contact() {
       id="contacto"
       className="relative w-full bg-surface px-margin-mobile pt-16 pb-editorial-gap-md md:px-margin-tablet md:pt-editorial-gap-xl lg:px-margin-desktop"
     >
-      <SectionFade edge="top" className="h-8 md:h-36" />
-      <SectionFade edge="bottom" className="max-md:hidden" />
-      <div className="relative z-20 grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-gutter-desktop">
+      <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-gutter-desktop">
         <div className="flex min-w-0 flex-col justify-between lg:col-span-5">
           <div>
             {contact.title ? (
